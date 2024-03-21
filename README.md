@@ -8,3 +8,9 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in browser for result
+
+For unit tests, use:
+
+```bash
+npm run test
+```
