@@ -1,50 +1,49 @@
 "use client"
 
-import React, { Dispatch, SetStateAction } from 'react'
+import React from 'react'
 import { markazi } from '../fonts';
-import { Reservation } from '../page';
+import { SubmitHandler, UseFormGetValues, UseFormHandleSubmit } from 'react-hook-form';
 
 type ConfirmedBookingProps = {
-  resInfo: Reservation;
-  setResInfo: Dispatch<
-    SetStateAction<{
-      firstName: string;
-      lastName: string;
-      email: string;
-      date: string;
-      time: string;
-      guests: string;
-      occasion: string;
-      comments: string;
-    }>
-  >
   setShowConfirm: React.Dispatch<React.SetStateAction<boolean>>
-  submitForm: (formData: Object) => Promise<any>
-  formRef: React.RefObject<HTMLFormElement>
+  onSubmit: SubmitHandler<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    date: string;
+    time: string;
+    guests: string;
+    occasion?: string | undefined;
+    comments?: string | undefined;
+  }>
+  handleSubmit: UseFormHandleSubmit<{
+    date: string;
+    time: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    guests: string;
+    occasion?: string | undefined;
+    comments?: string | undefined;
+  }, undefined>
+  getValues: UseFormGetValues<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    date: string;
+    time: string;
+    guests: string;
+    occasion?: string | undefined;
+    comments?: string | undefined;
+  }>
+  isLoading: boolean
 }
 
-export default function ConfirmedBooking({ resInfo, setShowConfirm, submitForm, setResInfo, formRef } : ConfirmedBookingProps) {
+export default function ConfirmedBooking({ setShowConfirm, onSubmit, handleSubmit, getValues, isLoading } : ConfirmedBookingProps) {
 
   const closeConfirm = () => {
     setShowConfirm(false);
   }
-
-  const handleConfirmButton = () => {
-    if (!!submitForm(resInfo)) {
-      console.log("submitted successfully");
-      closeConfirm();
-      formRef.current?.reset()
-      setResInfo({
-        ...resInfo,
-        occasion: "",
-        comments: "",
-      });
-    }
-
-    if (!submitForm(resInfo)) {
-      console.log("something went wrong");
-    }
-  };
 
   return (
     <>
@@ -58,32 +57,32 @@ export default function ConfirmedBooking({ resInfo, setShowConfirm, submitForm, 
 
             <p className="font-bold">Name:</p>
             <p>
-              {resInfo.firstName} {resInfo.lastName}
+              {getValues().firstName} {getValues().lastName}
             </p>
 
             <p className="font-bold">Email:</p>
-            <p>{resInfo.email}</p>
+            <p>{getValues().email}</p>
 
             <p className="font-bold">Date:</p>
-            <p>{resInfo.date}</p>
+            <p>{getValues().date}</p>
 
             <p className="font-bold">Time:</p>
-            <p>{resInfo.time}</p>
+            <p>{getValues().time}</p>
 
             <p className="font-bold">Guests:</p>
-            <p>{resInfo.guests}</p>
+            <p>{getValues().guests}</p>
 
-            {resInfo.occasion && (
+            {getValues().occasion && (
               <div>
                 <p className="font-bold">Occasion:</p>
-                <p>{resInfo.occasion}</p>
+                <p>{getValues().occasion}</p>
               </div>
             )}
 
-            {resInfo.comments && (
+            {getValues().comments && (
               <div>
                 <p className="font-bold">Comments:</p>
-                <p>{resInfo.comments}</p>
+                <p>{getValues().comments}</p>
               </div>
             )}
 
@@ -101,9 +100,9 @@ export default function ConfirmedBooking({ resInfo, setShowConfirm, submitForm, 
                   type="submit"
                   form="res-form"
                   className="bg-LLyellow rounded-xl text-black font-bold p-2 w-full"
-                  onClick={handleConfirmButton}
+                  onClick={handleSubmit(onSubmit)}
                 >
-                  Confirm
+                  {isLoading ? "Confirming..." : "Confirm"}
                 </button>
 
             </div>

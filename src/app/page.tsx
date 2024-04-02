@@ -1,16 +1,12 @@
 'use client'
 
-import { useState } from 'react';
 import BookingForm from './components/BookingForm';
 import Image from "next/image";
 import { submitAPI } from './components/mockapi';
 
-let submissionSuccess: boolean = false;
-
 const submitForm = async(formData: Object) => {
   const formSubmission = await submitAPI(formData)
-    .then((value) => {
-      submissionSuccess = value
+    .then(() => {
       return true
     })
     .catch((error) => {
@@ -19,29 +15,7 @@ const submitForm = async(formData: Object) => {
     });
 }
 
-export interface Reservation {
-  firstName: string;
-  lastName: string;
-  email: string;
-  date: string;
-  time: string;
-  guests: string;
-  occasion: string;
-  comments: string;
-}
-
 export default function Home() {
-
-  const [resInfo, setResInfo] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    date: "",
-    time: "",
-    guests: "",
-    occasion: "",
-    comments: "",
-  });
 
   return (
     <>
@@ -49,8 +23,6 @@ export default function Home() {
         <div className="m-3 p-5 bg-slate-100 rounded-xl md:w-8/12 lg:w-6/12">
 
           <BookingForm
-            resInfo={resInfo}
-            setResInfo={setResInfo}
             submitForm={submitForm}
           />
         </div>

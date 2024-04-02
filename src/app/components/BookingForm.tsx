@@ -1,57 +1,86 @@
 'use client'
 
-import React, { FormEvent, useState, Dispatch, SetStateAction, useEffect, createRef } from 'react'
+import React, { FormEvent, useState, createRef } from 'react'
 import { markazi } from '../fonts';
 import { fetchAPI } from './mockapi'
-import { Reservation } from '../page';
 import ConfirmedBooking from './ConfirmedBooking';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { ReservationSchema } from '../models/Reservation';
+import type { ReservationType } from '../models/Reservation';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 type BookingFormProps = {
-  resInfo: Reservation;
-  setResInfo: Dispatch<
-    SetStateAction<{
-      firstName: string;
-      lastName: string;
-      email: string;
-      date: string;
-      time: string;
-      guests: string;
-      occasion: string;
-      comments: string;
-    }>
-  >;
   submitForm: (formData: Object) => Promise<any>
 };
 
-export default function BookingForm({ resInfo, setResInfo, submitForm } : BookingFormProps) {
+export default function BookingForm({ submitForm } : BookingFormProps) {
 
   const [showConfirm, setShowConfirm] = useState(false)
+  const [timesData, setTimesData] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
 
   const todaysDate = new Date().toISOString().split('T')[0]
-  const formRef = createRef<HTMLFormElement>();
 
-  const handleSubmit = (event : FormEvent<HTMLFormElement>) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    trigger,
+    getValues,
+    resetField,
+  } = useForm<ReservationType>({
+    resolver: zodResolver(ReservationSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      date: todaysDate,
+      time: '',
+      guests: '',
+      occasion: '',
+      comments: '',
+    }
+  });
+
+  const onSubmit: SubmitHandler<ReservationType> = async (data) => {
+    setIsLoading(true)
+    const submission = await submitForm(getValues())
+    .then(() => {
+      console.log(data);
+      setShowConfirm(false);
+      reset();
+      setIsLoading(false)
+    })
+    .catch((error) => { console.log(error)})
+  }
+
+  const handleNextClick = async (event : FormEvent<HTMLFormElement>) => {
+    const output = await trigger()
     event.preventDefault()
+    if(!output) return
     setShowConfirm(true)
   }
 
-  const handleChangeDate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = event.target.value
-    setResInfo({...resInfo, date: newDate})
+  const handleChangeDate = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    let newDate = event.target.value
+    const _timesData = await fetchAPI(newDate)
+      .catch((error) => console.log(error))
+    setTimesData(_timesData)
+    resetField("time")
   }
 
-  const [timesData, setTimesData] = useState([])
-
-  useEffect(() => {
-    const init = async() => {
-      let newDate = resInfo.date
-      const _timesData = await fetchAPI(newDate)
-        .catch((error) => console.log(error))
-
-      setTimesData(_timesData);
-    };
-    init();
-  }, [resInfo.date]);
+  const checkForTimes = () => {
+    if(timesData === undefined){
+      return false
+    }
+    else if(timesData.length < 1){
+      return false
+    }
+    else{
+      return true
+    }
+  }
 
   return (
     <>
@@ -62,17 +91,17 @@ export default function BookingForm({ resInfo, setResInfo, submitForm } : Bookin
       <hr style={{ borderTop: "1px solid #495E57" }} className="mt-4"></hr>
       <form
         id="res-form"
-        onSubmit={handleSubmit}
+        onSubmit={handleNextClick}
         className="flex flex-col md:grid md:grid-cols-6 gap-4 pt-5 text-md"
-        ref={formRef}
+        noValidate
       >
         {showConfirm && (
           <ConfirmedBooking
-            resInfo={resInfo}
-            setResInfo={setResInfo}
             setShowConfirm={setShowConfirm}
-            submitForm={submitForm}
-            formRef={formRef}
+            onSubmit={onSubmit}
+            handleSubmit={handleSubmit}
+            getValues={getValues}
+            isLoading={isLoading}
           />
         )}
         <section className="flex flex-col md:col-span-3">
@@ -80,46 +109,57 @@ export default function BookingForm({ resInfo, setResInfo, submitForm } : Bookin
             First Name
           </label>
           <input
+            {...register("firstName")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2 focus:outline-LLyellow"
             type="text"
             placeholder="Enter first name"
             id="first"
             autoComplete="on"
-            onChange={(e) =>
-              setResInfo({ ...resInfo, firstName: e.target.value })
-            }
             required
           />
+          {errors.firstName?.message && (
+            <p className="text-sm text-red-500 font-bold mt-1">
+              {errors.firstName.message}
+            </p>
+          )}
         </section>
         <section className="flex flex-col md:col-span-3">
           <label htmlFor="last" className="font-bold">
             Last Name
           </label>
           <input
+            {...register("lastName")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2 focus:outline-LLyellow"
             type="text"
             placeholder="Enter last name"
             id="last"
             autoComplete="on"
-            onChange={(e) =>
-              setResInfo({ ...resInfo, lastName: e.target.value })
-            }
             required
           />
+          {errors.lastName?.message && (
+            <p className="text-sm text-red-500 font-bold mt-1">
+              {errors.lastName.message}
+            </p>
+          )}
         </section>
         <section className="flex flex-col md:col-span-3">
           <label htmlFor="email" className="font-bold">
             Email
           </label>
           <input
+            {...register("email")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2 focus:outline-LLyellow"
             type="email"
             placeholder="Enter email address"
             id="email"
             autoComplete="on"
-            onChange={(e) => setResInfo({ ...resInfo, email: e.target.value })}
             required
           />
+          {errors.email?.message && (
+            <p className="text-sm text-red-500 font-bold mt-1">
+              {errors.email.message}
+            </p>
+          )}
         </section>
         <hr
           style={{ borderTop: "1px solid #495E57" }}
@@ -130,31 +170,38 @@ export default function BookingForm({ resInfo, setResInfo, submitForm } : Bookin
             Date
           </label>
           <input
+            {...register("date", {
+              onChange: (e) => handleChangeDate(e)
+            })}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2 focus:outline-LLyellow"
             type="date"
             id="date"
             autoComplete="on"
             defaultValue={todaysDate}
             min={new Date().toISOString().split("T")[0]}
-            onChange={handleChangeDate}
             required
           />
+          {errors.date?.message && (
+            <p className="text-sm text-red-500 font-bold mt-1">
+              {errors.date.message}
+            </p>
+          )}
         </section>
         <section className="flex flex-col md:col-span-3">
           <label htmlFor="time" className="font-bold">
             Time
           </label>
           <select
+            {...register("time")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2.5 invalid:text-gray-400 focus:outline-LLyellow"
             id="time"
-            onChange={(e) => setResInfo({ ...resInfo, time: e.target.value })}
             required
             defaultValue=""
           >
             <option value="" disabled>
               - Select a time -
             </option>
-            {timesData ? (
+            {checkForTimes() ? (
               <>
                 {timesData[0] ? (
                   <option className="text-black" value={timesData[0]}>
@@ -182,33 +229,41 @@ export default function BookingForm({ resInfo, setResInfo, submitForm } : Bookin
               <option disabled>No times available</option>
             )}
           </select>
+          {errors.time?.message && (
+            <p className="text-sm text-red-500 font-bold mt-1">
+              {errors.time.message}
+            </p>
+          )}
         </section>
         <section className="flex flex-col md:col-span-3">
           <label htmlFor="guests" className="font-bold">
             Guests
           </label>
           <input
+            {...register("guests")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2 focus:outline-LLyellow"
             type="number"
             id="guests"
             placeholder="Enter amount of guests"
             min={1}
             max={25}
-            onChange={(e) => setResInfo({ ...resInfo, guests: e.target.value })}
             required
           />
+          {errors.guests?.message && (
+            <p className="text-sm text-red-500 font-bold mt-1">
+              {errors.guests.message}
+            </p>
+          )}
         </section>
         <section className="flex flex-col md:col-span-3">
           <label htmlFor="occasion" className="font-bold">
             Occasion (optional)
           </label>
           <select
+            {...register("occasion")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2.5 focus:outline-LLyellow"
             id="occasion"
             defaultValue=""
-            onChange={(e) =>
-              setResInfo({ ...resInfo, occasion: e.target.value })
-            }
           >
             <option value="" className="text-gray-400">
               - Select an occasion -
@@ -224,14 +279,12 @@ export default function BookingForm({ resInfo, setResInfo, submitForm } : Bookin
             Additional Comments (optional)
           </label>
           <textarea
+            {...register("comments")}
             className="w-auto border-2 border-LLgreen rounded-lg px-2 py-2 focus:outline-LLyellow"
             id="comments"
             placeholder="Enter any additional comments"
             rows={5}
             style={{ resize: "none" }}
-            onChange={(e) =>
-              setResInfo({ ...resInfo, comments: e.target.value })
-            }
           ></textarea>
         </section>
         <br className="md:hidden" />
