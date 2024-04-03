@@ -14,7 +14,7 @@ export default function NavBar() {
           className="w-8 h-auto md:hidden md:scale-0"
           style={{ color: "#495E57" }}
         />
-        <div className="grow flex flex-row gap-2 justify-center items-center md:justify-start md:pl-5">
+        <div className="grow flex flex-row gap-2 justify-center items-center md:justify-start md:pl-5" aria-label="Home">
           <Image
             src="/lemon.png"
             width={16}
@@ -32,12 +32,12 @@ export default function NavBar() {
           style={{ color: "#495E57" }}
         />
         <div className="text-sm lg:text-base hidden md:flex flex-row gap-1 place-items-center font-bold uppercase pr-5">
-          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 ">Home</h1>
-          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 ">About</h1>
-          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 ">Menu</h1>
-          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 ">Reservations</h1>
-          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 ">Order Online</h1>
-          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 ">Log In</h1>
+          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 " aria-label="Home">Home</h1>
+          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 " aria-label="About">About</h1>
+          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 " aria-label="Menu">Menu</h1>
+          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 " aria-label="Reservations">Reservations</h1>
+          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 " aria-label="Order Online">Order Online</h1>
+          <h1 className="p-2 rounded-lg hover:bg-slate-200 hover:text-slate-800 " aria-label="Log In">Log In</h1>
         </div>
       </div>
     </nav>
